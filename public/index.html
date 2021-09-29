@@ -1,12 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso denegado</title>
-</head>
-<body>
-  <h1>Acceso denegado</h1>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google SignIn</title>
+  </head>
+  <body>
+    <h1>Google SignIn</h1>
+
+    <div
+      id="g_id_onload"
+      data-client_id="361084084256-5neckhn29pha7qo0llnjvpr6t1bg1im5.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false"
+    ></div>
+    <div
+      class="g_id_signin"
+      data-type="standard"
+      data-size="large"
+      data-theme="outline"
+      data-text="sign_in_with"
+      data-shape="rectangular"
+      data-logo_alignment="left"
+    ></div>
+
+    <button id="googleSignOut">
+      Sign Out
+    </button>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      function handleCredentialResponse(response) {
+        const body = {id_token: response.credential}
+        
+        fetch("http://localhost:8080/api/auth/google", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        })
+          .then((resp) => resp.json())
+          .then((resp) => {
+            console.log(resp)
+            localStorage.setItem('emailGoogle', resp.usuario.correo)
+            location.reload()
+          })
+          .catch(console.warn)
+      }
+
+      const button = document.getElementById('googleSignOut')
+
+      button.onclick = () => {
+        console.log(google.accounts.id)
+        google.accounts.id.disableAutoSelect()
+
+        google.accounts.id.revoke(localStorage.getItem('emailGoogle'), done => {
+          localStorage.removeItem('emailGoogle')
+          location.reload()
+        })
+      }
+    </script>
+  </body>
 </html>

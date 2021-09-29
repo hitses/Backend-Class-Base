@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 
 const Usuario = require('../models/usuario')
 const { generarJWT } = require('../helpers/generar-jwt')
+const { googleVerify } = require('../helpers/google-verify')
 
 const login = async (req, res = response) => {
   try {
@@ -10,17 +11,17 @@ const login = async (req, res = response) => {
 
     const usuario = await Usuario.findOne({correo})
 
-    // TODO Verificar email existe
+    // Verificar email existe
     if (!usuario) return res.status(400).json({msg: 'Correo no existe'})
     
-    // TODO usuario activo?
+    // Usuario activo?
     if (!usuario.estado) return res.status(400).json({msg: 'Estado inactivo'})
     
-    // TODO verificar pass
+    // Verificar pass
     const validPassword = bcrypt.compareSync(password, usuario.password)
     if (!validPassword) return res.status(400).json({msg: 'Password incorrecto'})
 
-    // TODO generar JWT
+    // Generar JWT
     const token = await generarJWT(usuario.id)
 
     res.json({
@@ -35,6 +36,42 @@ const login = async (req, res = response) => {
   }
 }
 
+const googleSignIn = async(req, res = response) => {
+  try {
+    const {id_token} = req.body
+
+    const {correo, nombre, img} = await googleVerify(id_token)
+
+    let usuario = await Usuario.findOne({correo})
+    if (!usuario) {
+      const data = {
+        nombre,
+        correo,
+        password: ':P',
+        img,
+        google: true,
+        rol: 'USER_ROLE'
+      }
+
+      usuario = new Usuario(data)
+      await usuario.save()
+    }
+
+    if (!usuario.estado) return res.status(401).json({msg: 'Usuario bloqueado. Hable con el administrador.'})
+
+    // Generar JWT
+    const token = await generarJWT(usuario.id)
+  
+    res.json({usuario, token})
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({
+      msg: 'Hable con el administrador.'
+    })
+  }
+}
+
 module.exports = {
-  login
+  login,
+  googleSignIn
 }
