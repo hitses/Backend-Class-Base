@@ -25,7 +25,6 @@ router.put('/:id', [
 ], usuariosPut)
 router.delete('/:id', [
   validarJWT,
-  // esAdminRole, // Es obligatorio que sea admin
   tieneRole('ADMIN_ROLE', 'VENTAS_ROLE'), // Es necesario que sea uno de los roles especificados
   check('id', 'No es un ID válido').isMongoId(),
   check('id').custom(existeUsuarioPorId),

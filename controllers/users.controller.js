@@ -39,8 +39,6 @@ const usuariosPut = async (req, res = response) => {
   const {id} = req.params
   const {_id, password, google, correo, ...resto} = req.body
 
-  // TODO validar id en BD
-
   if (password) {
     const salt = bcrypt.genSaltSync()
     resto.password = bcrypt.hashSync(password, salt)
