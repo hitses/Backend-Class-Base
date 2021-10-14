@@ -29,6 +29,12 @@ const existeNombreProducto = async (nombre) => {
   if (await Producto.findOne({nombre})) throw new Error(`'El producto con el nombre ${nombre} ya existe.'`)
 }
 
+const coleccionesPermitidas = async (coleccion, colecciones) => {
+  if(!colecciones.includes(coleccion)) throw new Error(`La colección ${coleccion} no está permitida. Las colecciones permitidas son: ${colecciones}`)
+  
+  return true
+}
+
 module.exports = {
   esRolValido,
   emailExiste,
@@ -36,5 +42,6 @@ module.exports = {
   existeCategoriaPorId,
   existeNombreCategoria,
   existeProductoPorId,
-  existeNombreProducto
+  existeNombreProducto,
+  coleccionesPermitidas
 }
